@@ -44,6 +44,13 @@ Text::QueryString - Fast QueryString Parser
     @query = $tqs->parse("foo=bar;bar=baz");
     @query = $tqs->parse("foo"); # foo => ""
 
+=head1 DISCLAIMER
+
+When I wrote this module, I didn't know about L<URL::Encode>, which apparently
+does the same thing I wanted to do via C<url_param_flat()> method. Upon closer
+examination, L<URL::Encode> seems to be much faster, so if you came here
+searching for "query string" or something, then go look at that module instead.
+
 =head1 DESCRIPTION
 
 WARNING: Still in ALPHA quality! Use at your own risk!
