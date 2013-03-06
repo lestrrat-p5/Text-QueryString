@@ -3,7 +3,7 @@ use strict;
 use XSLoader;
 our $VERSION;
 BEGIN {
-    $VERSION = '0.02';
+    $VERSION = '0.03';
     if ($ENV{PERL_TEXT_QUERYSTRING_BACKEND} eq 'PP') {
         require Text::QueryString::PP;
         no strict 'refs';
