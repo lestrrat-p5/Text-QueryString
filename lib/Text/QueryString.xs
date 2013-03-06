@@ -4,6 +4,83 @@
 #include "ppport.h"
 #include "xshelper.h"
 
+STATIC_INLINE
+SV *
+decode_uri_component(SV *suri){
+    SV *uri, *result;
+    int slen, dlen;
+    U8 buf[8], *dst, *src, *bp;
+    int i, hi, lo;
+    if (suri == &PL_sv_undef) return newSV(0);
+    /* if (!SvPOK(suri)) return newSV(0); */
+    uri  = sv_2mortal(newSVsv(suri)); /* make a copy to make func($1) work */
+    slen = SvPOK(uri) ? SvCUR(uri) : 0;
+    dlen = 0;
+    result = newSV(slen + 1);
+   
+    SvPOK_on(result);
+    dst  = (U8 *)SvPV_nolen(result);
+    src  = (U8 *)SvPV_nolen(uri);
+
+    for (i = 0; i < slen; i++){
+    if (src[i] == '%'){
+        if (isxdigit(src[i+1]) && isxdigit(src[i+2])){
+        strncpy((char *)buf, (char *)(src + i + 1), 2);
+        buf[2] = '\0'; /* @kazuho++ */
+        hi = strtol((char *)buf, NULL, 16);
+        dst[dlen++] = hi;
+        i += 2;
+        }
+        else if(src[i+1] == 'u'
+            && isxdigit(src[i+2]) && isxdigit(src[i+3])
+            && isxdigit(src[i+4]) && isxdigit(src[i+5])){
+        strncpy((char *)buf, (char *)(src + i + 2), 4);
+        buf[4] = '\0'; /* RT#39135 */
+        hi = strtol((char *)buf, NULL, 16);
+        i += 5;
+        if (hi < 0xD800  || 0xDFFF < hi){
+            bp = uvchr_to_utf8((U8 *)buf, (UV)hi);
+            strncpy((char *)(dst+dlen), (char *)buf, bp - buf);
+            dlen += bp - buf;
+        }else{
+            if (0xDC00 <= hi){ /* invalid */
+            warn("U+%04X is an invalid surrogate hi\n", hi);
+            }else{
+            i++;
+            if(src[i] == '%' && src[i+1] == 'u'
+               && isxdigit(src[i+2]) && isxdigit(src[i+3])
+               && isxdigit(src[i+4]) && isxdigit(src[i+5])){
+                strncpy((char *)buf, (char *)(src + i + 2), 4);
+                lo = strtol((char *)buf, NULL, 16);
+                i += 5;
+                if (lo < 0xDC00 || 0xDFFF < lo){
+                warn("U+%04X is an invalid lo surrogate", lo);
+                }else{
+                lo += 0x10000
+                    + (hi - 0xD800) * 0x400 -  0xDC00;
+                bp = uvchr_to_utf8((U8 *)buf, (UV)lo);
+                strncpy((char *)(dst+dlen), (char *)buf, bp - buf);
+                dlen += bp - buf;
+                }
+            }else{
+                warn("lo surrogate is missing for U+%04X", hi);
+            }
+            }
+        }
+        }else{
+        dst[dlen++] = '%';
+        }
+    }
+    else{
+        dst[dlen++] = src[i];
+    }
+    }
+
+    dst[dlen] = '\0'; /*  for sure; */
+    SvCUR_set(result, dlen);
+    return result;
+}
+
 /* split on "=".
    *key contains the key, &key_len contains the length,
    *value contains the value, &valye_len contains the length.
@@ -58,9 +135,8 @@ parse(self, qs)
             if (*cur == '&' || *cur == ';') {
                 /* found end of this pair. look for an = sign */
                 split_kv(prev, cur, &key, &key_len, &value, &value_len);
-                /* XXX decode first */
-                mXPUSHp(key, key_len);
-                mXPUSHp(value, value_len);
+                mXPUSHs(decode_uri_component(newSVpvn(key, key_len)));
+                mXPUSHs(decode_uri_component(newSVpvn(value, value_len)));
                 cur++;
                 prev = cur;
             } else {
@@ -71,8 +147,8 @@ parse(self, qs)
         /* do we have something leftover? */
         if (prev != cur) {
             split_kv(prev, cur, &key, &key_len, &value, &value_len);
-            mXPUSHp(key, key_len);
-            mXPUSHp(value, value_len);
+            mXPUSHs(decode_uri_component(newSVpvn(key, key_len)));
+            mXPUSHs(decode_uri_component(newSVpvn(value, value_len)));
         }
 
 
