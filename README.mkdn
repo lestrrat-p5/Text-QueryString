@@ -59,9 +59,10 @@ modified.
 
 See tools/benchmark.pl for details:
 
-       Rate   pp   xs
-    pp 15037/s   -- -69%
-    xs 48188/s 220%   --
+    Building Text-QueryString
+          Rate   pp   xs
+    pp 13964/s   -- -76%
+    xs 59077/s 323%   --
 
 # THANKS TO
 
