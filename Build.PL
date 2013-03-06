@@ -22,8 +22,7 @@ my $builder = Module::Build::Pluggable->new(
     configure_requires  => {
         'Module::Build'                     => '0.40',
         'Module::Build::Pluggable'          => '0.05',
-        'Module::Build::Pluggable::Reposutory' => 0,
-        'Module::Build::Pluggable::XSUtil'  => '0.01',
+        'Module::Build::Pluggable::XSUtil'  => '1.00',
     },
     create_makefile_pl  => 'small',
     requires            => {
