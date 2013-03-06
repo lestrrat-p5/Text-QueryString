@@ -1,5 +1,8 @@
 Changes
 =======
 
+0.02 - Aug 07 2013
+    - Fix SV memory leak, and remove unnecessary copying of SV
+
 0.01 - Aug 06 2013
     - Initial release
