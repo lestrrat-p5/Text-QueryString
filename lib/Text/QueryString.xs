@@ -6,14 +6,18 @@
 
 STATIC_INLINE
 SV *
-decode_uri_component(SV *suri){
-    SV *uri, *result;
+decode_uri_component(SV *uri){
+    SV *result;
     int slen, dlen;
     U8 buf[8], *dst, *src, *bp;
     int i, hi, lo;
-    if (suri == &PL_sv_undef) return newSV(0);
+
+    /* because of our usage, suri is guaranteed to be defined */
+    /* if (suri == &PL_sv_undef) return newSV(0); */
     /* if (!SvPOK(suri)) return newSV(0); */
-    uri  = sv_2mortal(newSVsv(suri)); /* make a copy to make func($1) work */
+    /* because of our usage, it's okay to make possibly destructive calls */
+    /*
+    uri  = sv_2mortal(newSVsv(suri)); * make a copy to make func($1) work */
     slen = SvPOK(uri) ? SvCUR(uri) : 0;
     dlen = 0;
     result = newSV(slen + 1);
@@ -135,8 +139,8 @@ parse(self, qs)
             if (*cur == '&' || *cur == ';') {
                 /* found end of this pair. look for an = sign */
                 split_kv(prev, cur, &key, &key_len, &value, &value_len);
-                mXPUSHs(decode_uri_component(newSVpvn(key, key_len)));
-                mXPUSHs(decode_uri_component(newSVpvn(value, value_len)));
+                mXPUSHs(decode_uri_component(sv_2mortal(newSVpvn(key, key_len))));
+                mXPUSHs(decode_uri_component(sv_2mortal(newSVpvn(value, value_len))));
                 cur++;
                 prev = cur;
             } else {
@@ -147,8 +151,8 @@ parse(self, qs)
         /* do we have something leftover? */
         if (prev != cur) {
             split_kv(prev, cur, &key, &key_len, &value, &value_len);
-            mXPUSHs(decode_uri_component(newSVpvn(key, key_len)));
-            mXPUSHs(decode_uri_component(newSVpvn(value, value_len)));
+            mXPUSHs(decode_uri_component(sv_2mortal(newSVpvn(key, key_len))));
+            mXPUSHs(decode_uri_component(sv_2mortal(newSVpvn(value, value_len))));
         }
 
 
