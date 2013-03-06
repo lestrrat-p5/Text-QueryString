@@ -70,4 +70,4 @@ Dan Kogai - For URI::Escape::XS
 
 # AUTHOR
 
-Daisuke Maki ` <<daisuke@endeworks.jp`\> >
+Daisuke Maki `<daisuke@endeworks.jp>`

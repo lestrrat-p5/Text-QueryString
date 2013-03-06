@@ -101,6 +101,6 @@ Dan Kogai - For URI::Escape::XS
 
 =head1 AUTHOR
 
-Daisuke Maki C< <<daisuke@endeworks.jp>> >
+Daisuke Maki C<< <daisuke@endeworks.jp> >>
 
 =cut
