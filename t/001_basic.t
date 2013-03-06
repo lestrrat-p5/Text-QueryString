@@ -70,11 +70,17 @@ my $tqs = Text::QueryString->new;
 }
 
 {
+    my @query = $tqs->parse("foo=&bar=1+foo=1&bar=");
+    if (! is_deeply(\@query, [ foo => "", bar => "1 foo=1", bar => "" ])) {
+        diag explain \@query;
+    }
+}
+
+{
     my @query = $tqs->parse("foo=1&=&bar=1");
     if (! is_deeply(\@query, [ foo => 1, "" => "", bar => 1 ])) {
         diag explain \@query;
     }
-
 }
 
 done_testing;

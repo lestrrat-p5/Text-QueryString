@@ -27,7 +27,9 @@ decode_uri_component(SV *uri){
     src  = (U8 *)SvPV_nolen(uri);
 
     for (i = 0; i < slen; i++){
-    if (src[i] == '%'){
+    if (src[i] == '+'){
+        dst[dlen++] = ' ';
+    } else if (src[i] == '%'){
         if (isxdigit(src[i+1]) && isxdigit(src[i+2])){
         strncpy((char *)buf, (char *)(src + i + 1), 2);
         buf[2] = '\0'; /* @kazuho++ */
